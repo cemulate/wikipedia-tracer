@@ -1,0 +1,4 @@
+# IDE configuration and other files
+*.sublime-project
+*.sublime-workspace
+*.layout

@@ -1,0 +1,31 @@
+/* Layout fixes */
+
+#output {
+    height: 130px;
+}
+
+#input, #submit {
+    margin-top: -5px;
+}
+
+table {
+    table-layout: fixed;
+}
+
+table th, table td {
+    overflow: hidden;
+}
+
+table td:nth-child(1) {
+    width: 75%;
+}
+
+table td:nth-child(2) {
+    width: 25%;
+}
+
+/* Font changes */
+
+body textarea {
+    font-family: "Lucida Console";
+}
