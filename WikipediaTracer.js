@@ -74,8 +74,14 @@ WikipediaTracer.prototype.cleanPageName = function (name) {
 }
 
 WikipediaTracer.prototype.doTrace = function () {
-    var turl = 'http://en.wikipedia.org/w/api.php?action=query&format=json&redirects=&prop=revisions&rvlimit=1&rvprop=content&rvsection=0&rvparse=&titles='
-    turl = turl + this.cur
+    var turl = 'http://en.wikipedia.org/w/api.php?action=query&format=json&redirects=&prop=revisions&rvlimit=1&rvprop=content&rvsection='
+    if (this._tryRvSection) {
+        turl += this._tryRvSection
+    } else {
+        turl += "0"
+    }
+    turl += "&rvparse=&titles="
+    turl += this.cur
 
     $.ajax({
         url: turl,
@@ -99,6 +105,24 @@ WikipediaTracer.prototype.doTrace = function () {
 }
 
 WikipediaTracer.prototype.analyzeContent = function () {
+
+    if (this._text.length == 0) {
+
+        // This article doesn't have an introduction. Nope out, and this time set the
+        // _tryRvSection variable. doTrace will detect it and try a higher section number
+
+        if (!this._tryRvSection) {
+            this._tryRvSection = 1
+        } else {
+            this._tryRvSection += 1
+        }
+        this.doTrace()
+        return
+    } else {
+
+        // Successful, we can revert to regular rvSection 0 now
+        this._tryRvSection = null
+    }
 
     // Make a jquery object out of the retrieved content
     var doc = $("<html>").append(this._text)
