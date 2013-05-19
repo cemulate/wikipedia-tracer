@@ -58,7 +58,11 @@
                 var loopElement = wk.chain[wk.loopBackIndex]
 
                 var info = $("<div>").attr("id", "loopInfo").addClass("alert alert-info").append(
-                    "This article loops on: <strong>" + loopElement.name + "</strong>"
+                    "This article reaches <strong>" + loopElement.name + "</strong>"
+                ).append(
+                    " in <strong>" + wk.loopBackIndex + "</strong> articles"
+                ).append(
+                    " and then loops through <strong>" + (wk.chain.length - wk.loopBackIndex - 1) + "</strong> additional articles"
                 )
 
                 $("#chainTable").after(info)
