@@ -51,6 +51,20 @@ WikipediaTracer.prototype.seedFromName = function (name) {
     }
 }
 
+WikipediaTracer.prototype.getRandomPageName = function () {
+    $.ajax({
+        url: 'http://en.wikipedia.org/w/api.php?action=query&list=random&format=json&rnnamespace=0&rnlimit=1&indexpageids=',
+        dataType: 'jsonp',
+        success: function (_this) { //closure
+            return function (data) {
+                if (_this.gotRandomCallback) {
+                    _this.gotRandomCallback.call(null, data.query.random[0].title)
+                }
+            }
+        }(this)
+    })
+}
+
 WikipediaTracer.prototype.linkFromName = function (name) {
     return "http://en.wikipedia.org/wiki/" + name.replace(" ", "_")
 }

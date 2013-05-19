@@ -43,10 +43,11 @@
 
                 $("#chainBody").append(carrier)
 
+                $("html, body").scrollTop($(document).height())
             }
 
             wk.doneCallback = function () {
-                $("#submit").removeAttr("disabled")
+                $("#submit,#getRandom").removeAttr("disabled")
 
                 $(".chain-element:eq(" + wk.loopBackIndex + ")").addClass("info")
 
@@ -57,31 +58,41 @@
                 var loopElement = wk.chain[wk.loopBackIndex]
 
                 var info = $("<div>").attr("id", "loopInfo").addClass("alert alert-info").append(
-                    $("<button>").attr("type", "button").addClass("close").attr("data-dismiss", "alert").append("&times;")
-                ).append(
                     "This article loops on: <strong>" + loopElement.name + "</strong>"
                 )
 
-                $("#inputWell").after(info)
+                $("#chainTable").after(info)
 
-                $("#loopInfo").css("display", "none")
-                $("#loopInfo").slideDown()
+                $("#loopInfo").hide()
+                $("#loopInfo").animate({
+                    "height":"toggle",
+                    "padding-top":"toggle",
+                    "padding-bottom":"toggle"
+                }, {
+                    duration: 400,
+                    step: function (now, fx) {
+                        $("html,body").scrollTop($(document).height())
+                    }
+                })
 
             }
 
             wk.errorCallback = function () {
                 var info = $("<div>").attr("id", "errorInfo").addClass("alert alert-warning").append(
-                    $("<button>").attr("type", "button").addClass("close").attr("data-dismiss", "alert").append("&times;")
-                ).append(
                     "Cannot find an article with this name"
                 )
 
                 $("#inputWell").after(info)
 
-                $("#errorInfo").css("display", "none")
+                $("#errorInfo").hide()
                 $("#errorInfo").slideDown()
 
-                $("#submit").removeAttr("disabled")
+                $("#submit,#getRandom").removeAttr("disabled")
+            }
+
+            wk.gotRandomCallback = function (random) {
+                $("#input").val(random)
+                $("#submit,#getRandom").removeAttr("disabled")
             }
 
             $("#submit").click(function () {
@@ -90,8 +101,15 @@
                 $("#loopInfo,#errorInfo").remove()
 
                 wk.seedFromName($("#input").val())
-                $("#submit").attr("disabled", "disabled")
+                $("#submit,#getRandom").attr("disabled", "disabled")
                 wk.doTrace()
+            })
+
+            $("#getRandom").click(function () {
+
+                $("#submit,#getRandom").attr("disabled", "disabled")
+
+                wk.getRandomPageName()
             })
 
         });
@@ -113,11 +131,14 @@
             </div>
         </div>
         <div class="row-fluid">
-            <div class="span10">
+            <div class="span8">
                 <input id="input" class="span12" type="text"></input>
             </div>
             <div class="span2">
-                <button id="submit" class="btn span12">Submit</button>
+                <button id="getRandom" class="btn span12 submit-buttons">Random</button>
+            </div>
+            <div class="span2">
+                <button id="submit" class="btn span12 submit-buttons">Submit</button>
             </div>
         </div>
     </div>

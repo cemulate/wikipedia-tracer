@@ -4,7 +4,7 @@
     height: 130px;
 }
 
-#input, #submit {
+.well input,button {
     margin-top: -5px;
 }
 
