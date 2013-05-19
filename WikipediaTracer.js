@@ -79,7 +79,6 @@ WikipediaTracer.prototype.doTrace = function () {
         dataType: 'jsonp',
         success: function (_this) { //closure
             return function (data) {
-                console.log(data)
                 var pages = data.query.pages
                 var keys = Object.keys(pages)
                 if (keys[0] == "-1") {
