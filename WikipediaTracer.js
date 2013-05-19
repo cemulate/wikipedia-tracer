@@ -123,7 +123,6 @@ WikipediaTracer.prototype.analyzeContent = function () {
         this.doTrace()
         return
     }
-
     // Make a jquery object out of the retrieved content
     var doc = $("<html>").html(this._text)
     
@@ -136,8 +135,8 @@ WikipediaTracer.prototype.analyzeContent = function () {
     }
 
     // Get the <p> and <ul> elements, they will contain the first link
-    var pchild = $(doc).children('p,ul')
-    
+    var pchild = $(doc).find("p,ul")
+
     if (pchild.length == 0) {
 
         // There... were no <p> or <ul> children, so we'll just wrap everything in a <p>..
@@ -145,7 +144,7 @@ WikipediaTracer.prototype.analyzeContent = function () {
         // However, this fixes a bug with the page: http://en.wikipedia.org/wiki/Physical_science
 
         $(doc).wrapInner("<p>")
-        pchild = $(doc).children('p,ul')
+        pchild = $(doc).find("p,ul")
     }
 
     for (i = 0; i < pchild.length; i ++) {
