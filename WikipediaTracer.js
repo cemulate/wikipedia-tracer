@@ -18,7 +18,8 @@ var taglist = ['.collapsible',
                  '.toccolours',
                  '.navbox-inner',
                  '.right',
-                 '.seealso',
+                 '.seealso', // "See also" italicized phrases
+                 '.further', // "Further information" italicized phrases
                  '.mainarticle',
                  '.mw-editsection',
                  '.mw-stack',
