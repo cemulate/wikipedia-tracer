@@ -19,6 +19,7 @@ var taglist = ['.collapsible',
                  '.navbox-inner',
                  '.right',
                  '.seealso',
+                 '.mw-editsection',
                  'table']
 
 var taglist2 = ['strong',
@@ -43,8 +44,7 @@ WikipediaTracer.prototype.seedFromName = function (name) {
     this.chain = []
     this.chain.push({
         name: name,
-        link: this.linkFromName(name),
-        context: ""
+        link: this.linkFromName(name)
     })
 
     if (this.updateCallback) {
@@ -119,10 +119,6 @@ WikipediaTracer.prototype.analyzeContent = function () {
         }
         this.doTrace()
         return
-    } else {
-
-        // Successful, we can revert to regular rvSection 0 now
-        this._tryRvSection = null
     }
 
     // Make a jquery object out of the retrieved content
@@ -141,8 +137,10 @@ WikipediaTracer.prototype.analyzeContent = function () {
     
     if (pchild.length == 0) {
 
+        // There... were no <p> or <ul> children, so we'll just wrap everything in a <p>..
         // This is really, really sketchy and scares me. 
         // However, this fixes a bug with the page: http://en.wikipedia.org/wiki/Physical_science
+
         $(doc).wrapInner("<p>")
         pchild = $(doc).children('p,ul')
     }
@@ -182,20 +180,20 @@ WikipediaTracer.prototype.analyzeContent = function () {
         var firstLinkIndex = $(elm).find('a').first().attr('absolute-link-index')
         if (firstLinkIndex != null) {
             
+            // SUCCESS! We found the next seed.
+            // First thing, reset _tryRvSection to null because it could be anything from searching at this point
+            this._tryRvSection = null
+
             // Now start building the object to attach to the chain
 
             var actualLink = links[firstLinkIndex]
             var nextSeed = actualLink.substr(6)
 
-            var contextEnd = $(elm).html().indexOf("<a")
-            var context = $(elm).html().substr(0, contextEnd)
-
             var cont = true
 
             var chainAppend = {
                 name: this.cleanPageName(nextSeed),
-                link: this.linkFromName(nextSeed),
-                context: context
+                link: this.linkFromName(nextSeed)
             }
 
             // Detect if we have looped
@@ -231,6 +229,18 @@ WikipediaTracer.prototype.analyzeContent = function () {
                 return
             }
 
+        } else {
+
+            // This article may have an introduction, but it doesn't have any damn links in it!
+            // Up the rvSection and search again
+
+            if (!this._tryRvSection) {
+                this._tryRvSection = 1
+            } else {
+                this._tryRvSection += 1
+            }
+            this.doTrace()
+            return
         }
     }
 
