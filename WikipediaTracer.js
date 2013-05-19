@@ -18,7 +18,8 @@ var taglist = ['.collapsible',
                  '.toccolours',
                  '.navbox-inner',
                  '.right',
-                 '.seealso']
+                 '.seealso',
+                 'table']
 
 var taglist2 = ['strong',
                 'img',
