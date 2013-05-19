@@ -70,7 +70,7 @@ WikipediaTracer.prototype.linkFromName = function (name) {
 }
 
 WikipediaTracer.prototype.cleanPageName = function (name) {
-    return name.replace("_", " ")
+    return name.split('_').join(' ')
 }
 
 WikipediaTracer.prototype.doTrace = function () {
