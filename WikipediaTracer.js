@@ -66,7 +66,7 @@ WikipediaTracer.prototype.getRandomPageName = function () {
 }
 
 WikipediaTracer.prototype.linkFromName = function (name) {
-    return "http://en.wikipedia.org/wiki/" + name.replace(" ", "_")
+    return "http://en.wikipedia.org/wiki/" + name.split(" ").join("_")
 }
 
 WikipediaTracer.prototype.cleanPageName = function (name) {
