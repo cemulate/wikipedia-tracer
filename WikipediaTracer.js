@@ -74,8 +74,11 @@ WikipediaTracer.prototype.cleanPageName = function (name) {
 }
 
 WikipediaTracer.prototype.doTrace = function () {
+    var turl = 'http://en.wikipedia.org/w/api.php?action=query&format=json&redirects=&prop=revisions&rvlimit=1&rvprop=content&rvsection=0&rvparse=&titles='
+    turl = turl + this.cur
+
     $.ajax({
-        url: 'http://en.wikipedia.org/w/api.php?action=query&format=json&redirects=&prop=revisions&rvprop=content&rvsection=0&&rvparse=&titles=' + this.cur,
+        url: turl,
         dataType: 'jsonp',
         success: function (_this) { //closure
             return function (data) {
@@ -96,7 +99,7 @@ WikipediaTracer.prototype.doTrace = function () {
 }
 
 WikipediaTracer.prototype.analyzeContent = function () {
-    
+
     // Make a jquery object out of the retrieved content
     var doc = $("<html>").append(this._text)
     
@@ -110,6 +113,14 @@ WikipediaTracer.prototype.analyzeContent = function () {
 
     // Get the <p> and <ul> elements, they will contain the first link
     var pchild = $(doc).children('p,ul')
+    
+    if (pchild.length == 0) {
+
+        // This is really, really sketchy and scares me. 
+        // However, this fixes a bug with the page: http://en.wikipedia.org/wiki/Physical_science
+        $(doc).wrapInner("<p>")
+        pchild = $(doc).children('p,ul')
+    }
 
     for (i = 0; i < pchild.length; i ++) {
         var elm = pchild[i]
@@ -156,8 +167,6 @@ WikipediaTracer.prototype.analyzeContent = function () {
 
             var cont = true
 
-            this.cur = nextSeed
-
             var chainAppend = {
                 name: this.cleanPageName(nextSeed),
                 link: this.linkFromName(nextSeed),
@@ -190,6 +199,7 @@ WikipediaTracer.prototype.analyzeContent = function () {
             // Continue or not
 
             if (cont) {
+                this.cur = nextSeed
                 this.doTrace()
                 return
             } else {
