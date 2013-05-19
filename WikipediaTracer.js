@@ -92,6 +92,14 @@ WikipediaTracer.prototype.doTrace = function () {
         dataType: 'jsonp',
         success: function (_this) { //closure
             return function (data) {
+                if (data.error) {
+                    if (_this.errorCallback) {
+                        // We've run out of sections of the article without finding a link...
+                        _this._tryRvSection = null
+                        _this.errorCallback.call(null, "Parsing error")
+                    }
+                    return
+                }
                 var pages = data.query.pages
                 var keys = Object.keys(pages)
                 if (keys[0] == "-1") {
@@ -106,6 +114,104 @@ WikipediaTracer.prototype.doTrace = function () {
         }(this)
     })
 
+}
+
+WikipediaTracer.prototype.searchElement = function (elm) {
+    
+    // Search a single element for a link
+
+    for (j = 0; j < taglist2.length; j ++) {
+        $(elm).find(taglist2[j]).remove()
+    }
+
+    var links = []
+
+    var li = 0
+
+    // On each link, piggy back an attribute that tells us its actual unedited index in the content
+    $(elm).find('a').each(function (ind) {
+        links.push($(this).attr('href'))
+        $(this).attr('absolute-link-index', li)
+        li += 1
+    })
+
+    // Now remove parenthetical expressions and other unallowed exceptions by grabbing the html and doing raw string manipulation on it
+    var inner = $(elm).html()
+    while (inner.match(/\(.*?\)/g)) {
+        inner = inner.replace(/\(.[^\(]*?\)/g, "")
+        inner = inner.replace(/\(\)/g, "")
+    }
+
+    // Rebuild an element out of the edited text
+    elm = $("<p>").append(inner)
+
+    // Find the *new* first link, and find the actual link that it corresponds to by getting its absolute-link-index and fetching
+    // the actual link from our links array
+
+    var firstLinkIndex = $(elm).find('a').first().attr('absolute-link-index')
+    if (firstLinkIndex != null) {
+        
+        // SUCCESS!
+
+        // Now start building a chain Link and return it to the caller
+
+        var actualLink = links[firstLinkIndex]
+        var nextSeed = actualLink.substr(6)
+
+        var cont = true
+
+        var chainAppend = {
+            seed: nextSeed,
+            name: this.cleanPageName(nextSeed),
+            link: this.linkFromName(nextSeed)
+        }
+
+        return chainAppend
+
+    } else {
+
+        return null
+    }
+
+    return null
+}
+
+WikipediaTracer.prototype.compareAndContinue = function (chainLink) {
+    
+    cont = true
+
+    // Detect if we have looped
+
+    i = 0
+    for (i = 0; i < this.chain.length; i ++) {
+        if (this.chain[i].link == chainLink.link) {
+            cont = false
+            this.loopBackIndex = i
+        }
+    }
+
+    // Call the appropriate callback
+
+    if (cont) {
+        this.chain.push(chainLink)
+        if (this.updateCallback != null) {
+            this.updateCallback.call(null)
+        }
+    } else {
+        if (this.doneCallback != null) {
+            this.doneCallback.call(null)
+        }
+    }
+
+    // Continue or not
+
+    if (cont) {
+        this.cur = chainLink.seed
+        this.doTrace()
+        return
+    } else {
+        return
+    }
 }
 
 WikipediaTracer.prototype.analyzeContent = function () {
@@ -123,9 +229,10 @@ WikipediaTracer.prototype.analyzeContent = function () {
         this.doTrace()
         return
     }
+
     // Make a jquery object out of the retrieved content
     var doc = $("<html>").html(this._text)
-    
+
     var i = 0
     var j = 0
 
@@ -137,119 +244,35 @@ WikipediaTracer.prototype.analyzeContent = function () {
     // Get the <p> and <ul> elements, they will contain the first link
     var pchild = $(doc).find("p,ul")
 
-    if (pchild.length == 0) {
-
-        // There... were no <p> or <ul> children, so we'll just wrap everything in a <p>..
-        // This is really, really sketchy and scares me. 
-        // However, this fixes a bug with the page: http://en.wikipedia.org/wiki/Physical_science
-
-        $(doc).wrapInner("<p>")
-        pchild = $(doc).find("p,ul")
-    }
-
+    // Search each element for a link. If we find one, go ahead and send the proposed chain element to compare/continue
     for (i = 0; i < pchild.length; i ++) {
-        var elm = pchild[i]
-
-        // Remove more useless tags from this element
-        for (j = 0; j < taglist2.length; j ++) {
-            $(elm).find(taglist2[j]).remove()
-        }
-
-        var links = []
-
-        var li = 0
-
-        // On each link, piggy back an attribute that tells us its actual unedited index in the content
-        $(elm).find('a').each(function (ind) {
-            links.push($(this).attr('href'))
-            $(this).attr('absolute-link-index', li)
-            li += 1
-        })
-
-        // Now remove parenthetical expressions and other unallowed exceptions by grabbing the html and doing raw string manipulation on it
-        var inner = $(elm).html()
-        while (inner.match(/\(.*?\)/g)) {
-            inner = inner.replace(/\(.[^\(]*?\)/g, "")
-            inner = inner.replace(/\(\)/g, "")
-        }
-
-        // Rebuild an element out of the edited text
-        elm = $("<p>").append(inner)
-
-        // Find the *new* first link, and find the actual link that it corresponds to by getting its absolute-link-index and fetching
-        // the actual link from our links array
-
-        var firstLinkIndex = $(elm).find('a').first().attr('absolute-link-index')
-        if (firstLinkIndex != null) {
-            
-            // SUCCESS! We found the next seed.
-            // First thing, reset _tryRvSection to null because it could be anything from searching at this point
-            this._tryRvSection = null
-
-            // Now start building the object to attach to the chain
-
-            var actualLink = links[firstLinkIndex]
-            var nextSeed = actualLink.substr(6)
-
-            var cont = true
-
-            var chainAppend = {
-                name: this.cleanPageName(nextSeed),
-                link: this.linkFromName(nextSeed)
-            }
-
-            // Detect if we have looped
-
-            i = 0
-            for (i = 0; i < this.chain.length; i ++) {
-                if (this.chain[i].link == chainAppend.link) {
-                    cont = false
-                    this.loopBackIndex = i
-                }
-            }
-
-            // Call the appropriate callback
-
-            if (cont) {
-                this.chain.push(chainAppend)
-                if (this.updateCallback != null) {
-                    this.updateCallback.call(null)
-                }
-            } else {
-                if (this.doneCallback != null) {
-                    this.doneCallback.call(null)
-                }
-            }
-
-            // Continue or not
-
-            if (cont) {
-                this.cur = nextSeed
-                this.doTrace()
-                return
-            } else {
-                return
-            }
-
-        } else {
-
-            // This article may have an introduction, but it doesn't have any damn links in it!
-            // Up the rvSection and search again
-
-            if (!this._tryRvSection) {
-                this._tryRvSection = 1
-            } else {
-                this._tryRvSection += 1
-            }
-            this.doTrace()
+        var cl = this.searchElement(pchild[i])
+        if (cl) {
+            this.compareAndContinue(cl)
             return
         }
     }
 
-    // If we get here, that means all else failed
+    // If that didn't work... try table data tags...
 
-    if (this.errorCallback) {
-        this.errorCallback.call(null, "Parsing error")
+    pchild = $(doc).find("td")
+
+    for (i = 0; i < pchild.length; i ++) {
+        var cl = this.searchElement(pchild[i])
+        if (cl) {
+            this.compareAndContinue(cl)
+            return
+        }
     }
+
+    // If we get here, that means all else failed. Up the rvSection
+
+    if (!this._tryRvSection) {
+        this._tryRvSection = 1
+    } else {
+        this._tryRvSection += 1
+    }
+    this.doTrace()
+    return
 
 }
