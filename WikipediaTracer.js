@@ -21,7 +21,8 @@ var taglist = ['.collapsible',
                  '.seealso',
                  '.mainarticle',
                  '.mw-editsection',
-                 '.mw-stack']
+                 '.mw-stack',
+                 '.noprint']
 
 var taglist2 = ['strong',
                 'img',
@@ -121,8 +122,6 @@ WikipediaTracer.prototype.analyzeContent = function () {
         this.doTrace()
         return
     }
-
-    console.log(this._text)
 
     // Make a jquery object out of the retrieved content
     var doc = $("<html>").html(this._text)
