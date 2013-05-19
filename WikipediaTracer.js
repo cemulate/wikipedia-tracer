@@ -19,6 +19,7 @@ var taglist = ['.collapsible',
                  '.navbox-inner',
                  '.right',
                  '.seealso',
+                 '.mainarticle',
                  '.mw-editsection',
                  'table']
 
