@@ -17,13 +17,13 @@ var taglist = ['.collapsible',
                  '.nowraplinks',
                  '.toccolours',
                  '.navbox-inner',
-                 '.right']
+                 '.right',
+                 '.seealso']
 
 var taglist2 = ['strong',
                 'img',
                 'sup',
                 '.nowrap',
-                'b',
                 'i',
                 'small',
                 '.external',
@@ -92,7 +92,7 @@ WikipediaTracer.prototype.doTrace = function () {
                 var keys = Object.keys(pages)
                 if (keys[0] == "-1") {
                     if (_this.errorCallback) {
-                        _this.errorCallback.call(null)
+                        _this.errorCallback.call(null, "Couldn't find an article with that name")
                     }
                     return
                 }
@@ -125,7 +125,7 @@ WikipediaTracer.prototype.analyzeContent = function () {
     }
 
     // Make a jquery object out of the retrieved content
-    var doc = $("<html>").append(this._text)
+    var doc = $("<html>").html(this._text)
     
     var i = 0
     var j = 0
@@ -148,7 +148,7 @@ WikipediaTracer.prototype.analyzeContent = function () {
 
     for (i = 0; i < pchild.length; i ++) {
         var elm = pchild[i]
-        
+
         // Remove more useless tags from this element
         for (j = 0; j < taglist2.length; j ++) {
             $(elm).find(taglist2[j]).remove()
@@ -232,4 +232,11 @@ WikipediaTracer.prototype.analyzeContent = function () {
 
         }
     }
+
+    // If we get here, that means all else failed
+
+    if (this.errorCallback) {
+        this.errorCallback.call(null, "Parsing error")
+    }
+
 }

@@ -81,10 +81,8 @@
 
             }
 
-            wk.errorCallback = function () {
-                var info = $("<div>").attr("id", "errorInfo").addClass("alert alert-warning").append(
-                    "Cannot find an article with this name"
-                )
+            wk.errorCallback = function (msg) {
+                var info = $("<div>").attr("id", "errorInfo").addClass("alert alert-warning").append(msg)
 
                 $("#inputWell").after(info)
 
