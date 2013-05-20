@@ -178,6 +178,8 @@ WikipediaTracer.prototype.searchElement = function (elm) {
 
 WikipediaTracer.prototype.compareAndContinue = function (chainLink) {
     
+    this._tryRvSection = null
+
     cont = true
 
     // Detect if we have looped
