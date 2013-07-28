@@ -1,0 +1,38 @@
+body {
+	font-family: "Open Sans", sans-serif;
+}
+
+
+/* Layout fixes */
+
+#output {
+    height: 130px;
+}
+
+#spacer {
+    height: 70px;
+}
+
+.well input,button {
+    margin-top: -5px;
+}
+
+table {
+    table-layout: fixed;
+}
+
+table th, table td {
+    overflow: hidden;
+}
+
+table td:nth-child(1) {
+    width: 75%;
+}
+
+table td:nth-child(2) {
+    width: 25%;
+}
+
+#chainTable tr {
+    height: 30px;
+}

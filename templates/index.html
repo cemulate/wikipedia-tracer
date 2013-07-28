@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+
+
+<head>
+    <meta charset="utf-8">
+    <title>Wikipedia Tracer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <link href="/static/bootstrap/css/bootstrap.min.Flatstrap.css" rel="stylesheet">
+
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,400italic' rel='stylesheet' type='text/css'>
+    <link href="/static/style.css" rel="stylesheet">
+
+    <link href="/static/animate.css" rel="stylesheet">
+
+    <link href="/static/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet">
+
+</head>
+
+
+
+<body ng-app="WikipediaTracer">
+
+<div id="mainContainer" class="container" ng-controller="MainController">
+    <div class="page-header">
+        <h2>
+            Wikipedia Tracer
+        </h2>
+    </div>
+    <div id="inputWell" class="well">
+        <div class="row-fluid">
+            <div class="span12">
+                <p>Following the first link (not in parentheses or italics) of any Wikipedia article indefinitely will almost always
+                   lead you to loop on the 'Philosophy' article. Can you find one that doesn't? Type the name of the starting wikipedia
+                   article in the box and click Submit to find out. Or, click Random to try it out with a random article.</p>
+            </div>
+        </div>
+        <hr>
+        <div class="row-fluid">
+            <div class="span8">
+                <input id="input" class="span12" type="text" ng-model="wk.seed"></input>
+            </div>
+            <div class="span2">
+
+                <button id="getRandom" 
+                    class="btn span12 submit-buttons" 
+                    ng-click="wk.getRandomPageName()" 
+                    ng-disabled="wk.state == 'busy'">
+                        
+                        Random
+
+                </button>
+
+            </div>
+            <div class="span2">
+                
+                <button id="submit" 
+                        class="btn span12 submit-buttons" 
+                        ng-click="wk.begin()"
+                        ng-disabled="wk.state == 'busy'">
+
+                            Submit
+
+                </button>
+            
+            </div>
+        </div>
+    </div>
+
+    <div ng-switch on="wk.state" ng-animate="{enter: 'animated fadeInDown'}">
+        <div class="alert alert-error" ng-switch-when="error">
+            Parsing Error
+        </div>
+
+        <div ng-switch-default></div>
+    </div>
+
+    <table id="chainTable" class="table table-bordered table-striped">
+        <tbody id="chainBody">
+    
+            <tr ng-repeat="chainlink in wk.chain" 
+                ng-class="chainlink.loop ? 'info' : ''"
+                ng-animate="{enter: 'animated fadeInDown'}">
+    
+                <td>
+                    <a href="{{chainlink.link}}">{{chainlink.name}}</a>
+                </td>
+                <td>
+                    <div ng-switch on="chainlink.loop">
+                        <span class="label label-success" ng-switch-when="true">Loop!</span>
+                        <span ng-switch-default></span>
+                    </div>
+                </td>
+            </tr>
+    
+        </tbody>
+    </table>
+
+    <div ng-switch on="wk.state" ng-animate="{enter: 'animated fadeInDown'}">
+        <div class="alert alert-info" ng-switch-when="success">
+            This article reaches <strong> {{wk.statistics.loopPoint}} </strong> in <strong> {{wk.statistics.lengthToLoop}} </strong> 
+            articles and then loops through <strong> {{wk.statistics.loopLength}} </strong> additional articles.
+        </div>
+
+        <div ng-switch-default></div>
+    </div>
+
+    <div id="spacer"></div>
+
+    <div id="pageBottom"</div>
+
+</div>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.1.5/angular.min.js"></script>
+
+<script src="http://cdnjs.cloudflare.com/ajax/libs/gsap/1.9.6/TweenMax.min.js"></script>
+<script src="http://d3lp1msu2r81bx.cloudfront.net/kjs/js/lib/kinetic-v4.5.0.min.js"></script>
+
+<script src="/static/WikipediaTracer.js"></script>
+
+<script>
+
+    var app = angular.module("WikipediaTracer", [])
+
+    app.controller('MainController', function ($scope, $http, $location, $anchorScroll) {
+        $scope.wk = new WikipediaTracer($http, function (status) {
+            if (status != "busy" && status != "success") {
+                $location.hash("mainController")
+            } else {
+                $location.hash("pageBottom")
+            }
+            $anchorScroll()
+        })
+    })
+
+</script>
+
+</body>
+
+
+
+</html>
