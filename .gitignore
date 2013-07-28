@@ -1,4 +1,7 @@
-# IDE configuration and other files
+venv
+*.pyc
+
+
 *.sublime-project
 *.sublime-workspace
 *.layout
